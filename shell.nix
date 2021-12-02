@@ -12,7 +12,11 @@ let
         call coc#config('rust-analyzer', {
           \'serverPath': '${rust}/bin/rust-analyzer'
         \})
+	call coc#config('codeLens', {
+	  \'enable': v:true
+	\})
         nmap <silent> gd <Plug>(coc-definition)
+	nnoremap <leader>cl :<C-u>call CocActionAsync('codeLensAction')<CR>
       '';
     };
     viAlias = true;
