@@ -1,76 +1,88 @@
-use std::str::FromStr;
 use sscanf::scanf;
+use std::str::FromStr;
 
+#[derive(Copy, Clone)]
 enum Dir {
     Forward,
     Down,
-    Up
+    Up,
 }
 
-impl Dir {
-    fn from_str(dir: &str) -> Dir {
-        use Dir::*;
+impl FromStr for Dir {
+    type Err = ();
+    fn from_str(dir: &str) -> Result<Self, Self::Err> {
         match dir {
-            "forward" => Forward,
-            "down" => Down,
-            "up" => Up,
-            _ => panic!("bad dir")
+            "forward" => Ok(Self::Forward),
+            "down" => Ok(Self::Down),
+            "up" => Ok(Self::Up),
+            _ => Err(()),
         }
     }
 }
 
+#[derive(Copy, Clone)]
 struct Action {
     dir: Dir,
-    magnitude: isize
+    magnitude: isize,
 }
 
-fn parse_record(line: String) -> Action {
-    let (dir_str, magnitude) = scanf!(line, "{} {}", String, isize).unwrap();
-    Action {
-        dir: Dir::from_str(&dir_str),
-        magnitude
-    }
-}
-
-fn parse(input: impl Iterator<Item = String>) -> Vec<Action> {
-    input.map(parse_record).collect()
-}
-
-fn solve_a(input: &[Action]) -> isize {
-    use Dir::*;
-    let mut h: isize = 0;
-    let mut d: isize = 0;
-    for action in input {
-        match action.dir {
-            Down => d += action.magnitude,
-            Up => d -= action.magnitude,
-            Forward => h += action.magnitude,
+impl FromStr for Action {
+    type Err = ();
+    fn from_str(action: &str) -> Result<Self, Self::Err> {
+        match scanf!(action, "{} {}", String, isize) {
+            Some((dir_str, magnitude)) => Ok(Action {
+                dir: Dir::from_str(&dir_str)?,
+                magnitude,
+            }),
+            None => Err(()),
         }
     }
-    h * d
 }
 
-fn solve_b(input: &[Action]) -> isize {
-    use Dir::*;
-    let mut h: isize = 0;
-    let mut d: isize = 0;
+fn parse(input: impl Iterator<Item = String>) -> impl Iterator<Item = Action> {
+    input.map(|line| line.parse().unwrap())
+}
+
+fn solve_a(input: impl Iterator<Item = Action>) -> isize {
+    let mut horizontal: isize = 0;
+    let mut depth: isize = 0;
+    for action in input {
+        match action.dir {
+            Dir::Down => depth += action.magnitude,
+            Dir::Up => depth -= action.magnitude,
+            Dir::Forward => horizontal += action.magnitude,
+        }
+    }
+    horizontal * depth
+}
+
+fn solve_b(input: impl Iterator<Item = Action>) -> isize {
+    let mut horizontal: isize = 0;
+    let mut depth: isize = 0;
     let mut aim: isize = 0;
     for action in input {
         match action.dir {
-            Down => aim += action.magnitude,
-            Up => aim -= action.magnitude,
-            Forward => {
-                h += action.magnitude;
-                d += aim * action.magnitude;
+            Dir::Down => aim += action.magnitude,
+            Dir::Up => aim -= action.magnitude,
+            Dir::Forward => {
+                horizontal += action.magnitude;
+                depth += aim * action.magnitude;
             }
         }
     }
-    h * d
+    horizontal * depth
 }
 
 fn main() {
-    let input = parse(aoc::stdin_input());
-    println!("A: {}\tB: {}", solve_a(&input), solve_b(&input));
+    // In order to run both solutions, we need to collect the iterator to allow two executions. If
+    // we were running on a large file such that memory or disk IO was an issue, we could run a
+    // single solution without collecting, and IO would be interleaved appropriately.
+    let input: Vec<_> = parse(aoc::stdin_input()).collect();
+    println!(
+        "A: {}\tB: {}",
+        solve_a(input.iter().copied()),
+        solve_b(input.iter().copied())
+    );
 }
 
 #[cfg(test)]
@@ -88,11 +100,11 @@ forward 2";
 
     #[test]
     fn sample_a() {
-        assert_eq!(solve_a(&parse(str_input(TEST_INPUT))), 150)
+        assert_eq!(solve_a(parse(str_input(TEST_INPUT))), 150)
     }
 
     #[test]
     fn sample_b() {
-        assert_eq!(solve_b(&parse(str_input(TEST_INPUT))), 900)
+        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 900)
     }
 }
