@@ -10,7 +10,9 @@ let
       ];
       customRC = ''
         call coc#config('rust-analyzer', {
-          \'serverPath': '${rust}/bin/rust-analyzer'
+          \'serverPath': '${rust}/bin/rust-analyzer',
+          \'cargo.loadOutDirsFromCheck': v:true,
+          \'procMacro.enable': v:true
         \})
 	call coc#config('codeLens', {
 	  \'enable': v:true
