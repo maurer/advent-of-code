@@ -1,4 +1,4 @@
-mmaurer's Advent of Code Repository
+maurer's Advent of Code Repository
 
-This is a repository containing solutions for the 2020 Advent of Code
+This is a repository containing solutions for the Advent of Code
 (https://adventofcode.com/).
