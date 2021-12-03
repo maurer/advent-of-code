@@ -30,10 +30,7 @@ impl FromStr for Action {
     type Err = ();
     fn from_str(action: &str) -> Result<Self, Self::Err> {
         match scanf!(action, "{} {}", String, isize) {
-            Some((dir_str, magnitude)) => Ok(Action {
-                dir: Dir::from_str(&dir_str)?,
-                magnitude,
-            }),
+            Some((dir_str, magnitude)) => Ok(Action { dir: Dir::from_str(&dir_str)?, magnitude }),
             None => Err(()),
         }
     }
@@ -78,11 +75,7 @@ fn main() {
     // we were running on a large file such that memory or disk IO was an issue, we could run a
     // single solution without collecting, and IO would be interleaved appropriately.
     let input: Vec<_> = parse(aoc::stdin_input()).collect();
-    println!(
-        "A: {}\tB: {}",
-        solve_a(input.iter().copied()),
-        solve_b(input.iter().copied())
-    );
+    println!("A: {}\tB: {}", solve_a(input.iter().copied()), solve_b(input.iter().copied()));
 }
 
 #[cfg(test)]

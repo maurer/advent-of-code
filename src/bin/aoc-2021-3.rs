@@ -5,11 +5,7 @@ fn parse(input: impl Iterator<Item = String>) -> impl Iterator<Item = Vec<bool>>
 }
 
 fn to_bias(bit: bool) -> isize {
-    if bit {
-        1
-    } else {
-        -1
-    }
+    if bit { 1 } else { -1 }
 }
 
 fn bits_to_usize(bits: impl Iterator<Item = bool>) -> usize {
@@ -43,10 +39,7 @@ fn winnow(mut input: Vec<Vec<bool>>, sense: bool) -> Vec<bool> {
             break;
         }
         let bias: isize = input.iter().map(|bits| to_bias(bits[idx])).sum();
-        input = input
-            .into_iter()
-            .filter(|bits| bits[idx] == (bias >= 0) ^ sense)
-            .collect();
+        input = input.into_iter().filter(|bits| bits[idx] == (bias >= 0) ^ sense).collect();
     }
     input.remove(0)
 }

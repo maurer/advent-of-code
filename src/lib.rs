@@ -6,7 +6,5 @@ pub fn stdin_input() -> impl Iterator<Item = String> {
 }
 
 pub fn str_input(input: &'static str) -> impl Iterator<Item = String> {
-    std::io::Cursor::new(input)
-        .lines()
-        .map(|line| line.unwrap())
+    std::io::Cursor::new(input).lines().map(|line| line.unwrap())
 }
