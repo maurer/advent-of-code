@@ -1,105 +1,60 @@
-use sscanf::scanf;
-use std::str::FromStr;
+static INPUT: &str = include_str!("../../inputs/2021/3");
 
-static INPUT: &'static str = include_str!("../../inputs/2021/3");
-
-fn parse(input: impl Iterator<Item = String>) -> impl Iterator<Item = String> {
-    input
+fn parse(input: impl Iterator<Item = String>) -> impl Iterator<Item = Vec<bool>> {
+    input.map(|line| line.chars().map(|c| c == '1').collect())
 }
 
-fn solve_a(input: impl Iterator<Item = String>) -> isize {
-    let mut out_1 = Vec::new();
-    let mut out_2 = Vec::new();
-    for line in input {
-        out_1.resize(line.len(), 0);
-        out_2.resize(line.len(), 0);
-        for (idx, c) in line.chars().enumerate() {
-            if c == '1' {
-                out_2[idx] += 1;
-            } else {
-                out_1[idx] += 1;
-            }
+fn to_bias(bit: bool) -> isize {
+    if bit {
+        1
+    } else {
+        -1
+    }
+}
+
+fn bits_to_usize(bits: impl Iterator<Item = bool>) -> usize {
+    let mut out = 0;
+    for bit in bits {
+        out <<= 1;
+        if bit {
+            out += 1;
         }
     }
-    let mut thunk = String::new();
-    let mut thunk2 = String::new();
-    for (x, y) in out_1.iter().zip(out_2.iter()) {
-        if x > y {
-            thunk.push('0');
-            thunk2.push('1');
-        } else {
-            thunk.push('1');
-            thunk2.push('0');
+    out
+}
+
+fn solve_a(mut input: impl Iterator<Item = Vec<bool>>) -> usize {
+    let mut biases: Vec<_> = input.next().unwrap().into_iter().map(to_bias).collect();
+    for bits in input {
+        for (bias, bit_bias) in biases.iter_mut().zip(bits.into_iter()) {
+            *bias += to_bias(bit_bias)
         }
     }
-    let gamma = isize::from_str_radix(&thunk, 2).unwrap();
-    let epsilon = isize::from_str_radix(&thunk2, 2).unwrap();
+
+    let gamma = bits_to_usize(biases.iter().map(|bias| *bias > 0));
+    let epsilon = bits_to_usize(biases.iter().map(|bias| *bias <= 0));
+
     gamma * epsilon
 }
 
-fn solve_b(input: impl Iterator<Item = String>) -> isize {
+fn winnow(mut input: Vec<Vec<bool>>, sense: bool) -> Vec<bool> {
+    for idx in 0..input[0].len() {
+        if input.len() <= 1 {
+            break;
+        }
+        let bias: isize = input.iter().map(|bits| to_bias(bits[idx])).sum();
+        input = input
+            .into_iter()
+            .filter(|bits| bits[idx] == (bias >= 0) ^ sense)
+            .collect();
+    }
+    input.remove(0)
+}
+
+fn solve_b(input: impl Iterator<Item = Vec<bool>>) -> usize {
     let stable: Vec<_> = input.collect();
-    let mut oxy_i: Vec<_> = stable.clone().into_iter().enumerate().collect();
-    let mut co2_i = oxy_i.clone();
-    while oxy_i.len() != 1 {
-        println!("oxyi {:?}", oxy_i);
-        let mut one = 0;
-        let mut zero = 0;
-        for (_, l) in &oxy_i {
-            if l.chars().next().unwrap() == '1' {
-                one += 1;
-            } else {
-                zero += 1;
-            }
-        }
-        if one >= zero {
-            oxy_i = oxy_i
-                .into_iter()
-                .filter(|(_, l)| l.chars().next().unwrap() == '1')
-                .collect();
-        } else {
-            oxy_i = oxy_i
-                .into_iter()
-                .filter(|(_, l)| l.chars().next().unwrap() == '0')
-                .collect();
-        }
-        for (_, l) in oxy_i.iter_mut() {
-            let mut c = l.chars();
-            c.next();
-            *l = c.as_str().to_string();
-        }
-    }
-    let oxy = isize::from_str_radix(&stable[oxy_i[0].0], 2).unwrap();
-    println!("oxy {}", oxy);
-    while co2_i.len() != 1 {
-        let mut one = 0;
-        let mut zero = 0;
-        for (_, l) in &co2_i {
-            if l.chars().next().unwrap() == '1' {
-                one += 1;
-            } else {
-                zero += 1;
-            }
-        }
-        if one < zero {
-            co2_i = co2_i
-                .into_iter()
-                .filter(|(_, l)| l.chars().next().unwrap() == '1')
-                .collect();
-        } else {
-            co2_i = co2_i
-                .into_iter()
-                .filter(|(_, l)| l.chars().next().unwrap() == '0')
-                .collect();
-        }
-        for (_, l) in co2_i.iter_mut() {
-            let mut c = l.chars();
-            c.next();
-            *l = c.as_str().to_string();
-        }
-    }
-    let co2 = isize::from_str_radix(&stable[co2_i[0].0], 2).unwrap();
-    println!("co2 {}", co2);
+    let oxy = bits_to_usize(winnow(stable.clone(), false).into_iter());
+    let co2 = bits_to_usize(winnow(stable, true).into_iter());
     co2 * oxy
 }
 
