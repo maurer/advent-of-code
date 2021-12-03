@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> {} }:
 let
   rust = pkgs.rustChannels.nightly.rust.override {
-      extensions = ["rust-src"];
+      extensions = ["rust-src" "clippy-preview"];
   };
   rustNeovim = pkgs.neovim.override {
     configure = {
