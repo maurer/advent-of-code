@@ -1,6 +1,9 @@
+use bitvec::prelude::*;
+type BV = BitVec<Msb0>;
+
 static INPUT: &str = include_str!("../../inputs/2021/3");
 
-fn parse(input: impl Iterator<Item = String>) -> impl Iterator<Item = Vec<bool>> {
+fn parse(input: impl Iterator<Item = String>) -> impl Iterator<Item = BV> {
     input.map(|line| line.chars().map(|c| c == '1').collect())
 }
 
@@ -8,32 +11,21 @@ fn to_bias(bit: bool) -> isize {
     if bit { 1 } else { -1 }
 }
 
-fn bits_to_usize(bits: impl Iterator<Item = bool>) -> usize {
-    let mut out = 0;
-    for bit in bits {
-        out <<= 1;
-        if bit {
-            out += 1;
-        }
-    }
-    out
-}
-
-fn solve_a(mut input: impl Iterator<Item = Vec<bool>>) -> usize {
+fn solve_a(mut input: impl Iterator<Item = BV>) -> usize {
     let mut biases: Vec<_> = input.next().unwrap().into_iter().map(to_bias).collect();
     for bits in input {
         for (bias, bit_bias) in biases.iter_mut().zip(bits.into_iter()) {
             *bias += to_bias(bit_bias)
         }
     }
-
-    let gamma = bits_to_usize(biases.iter().map(|bias| *bias > 0));
-    let epsilon = bits_to_usize(biases.iter().map(|bias| *bias <= 0));
-
+    let mut bias_bits: BV = biases.into_iter().map(|bias| bias > 0).collect();
+    let gamma: usize = bias_bits.load();
+    bias_bits = !bias_bits;
+    let epsilon: usize = bias_bits.load();
     gamma * epsilon
 }
 
-fn winnow(mut input: Vec<Vec<bool>>, sense: bool) -> Vec<bool> {
+fn winnow(mut input: Vec<BV>, sense: bool) -> BV {
     for idx in 0..input[0].len() {
         if input.len() <= 1 {
             break;
@@ -44,11 +36,11 @@ fn winnow(mut input: Vec<Vec<bool>>, sense: bool) -> Vec<bool> {
     input.remove(0)
 }
 
-fn solve_b(input: impl Iterator<Item = Vec<bool>>) -> usize {
+fn solve_b(input: impl Iterator<Item = BV>) -> usize {
     let stable: Vec<_> = input.collect();
-    let oxy = bits_to_usize(winnow(stable.clone(), false).into_iter());
-    let co2 = bits_to_usize(winnow(stable, true).into_iter());
-    co2 * oxy
+    let o2: usize = winnow(stable.clone(), false).load();
+    let co2: usize = winnow(stable, true).load();
+    o2 * co2
 }
 
 fn main() {
