@@ -26,12 +26,7 @@ fn parse(input: impl Iterator<Item = String>) -> impl Iterator<Item = Record> {
 }
 
 fn solve_a(input: impl Iterator<Item = Record>) -> isize {
-    let mut dr = Vec::new();
-    dr.resize(1000, 0);
-    let mut board = Vec::new();
-    for _ in 0..1000 {
-        board.push(dr.clone());
-    }
+    let mut board = [[0usize; 1000]; 1000];
     for mut record in input {
         if record.x1 == record.x2 {
             if record.y1 > record.y2 {
@@ -118,30 +113,30 @@ fn main() {
     );
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
-    use aoc::str_input;
-
-    const TEST_INPUT: &'static str = "\
-0,9 -> 5,9
-8,0 -> 0,8
-9,4 -> 3,4
-2,2 -> 2,1
-7,0 -> 7,4
-6,4 -> 2,0
-0,9 -> 2,9
-3,4 -> 1,4
-0,0 -> 8,8
-5,5 -> 8,2";
-
-    #[test]
-    fn sample_a() {
-        assert_eq!(solve_a(parse(str_input(TEST_INPUT))), 5)
-    }
-
-    #[test]
-    fn sample_b() {
-        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 12)
-    }
-}
+//#[cfg(test)]
+//mod test {
+//    use super::*;
+//    use aoc::str_input;
+//
+//    const TEST_INPUT: &'static str = "\
+//0,9 -> 5,9
+//8,0 -> 0,8
+//9,4 -> 3,4
+//2,2 -> 2,1
+//7,0 -> 7,4
+//6,4 -> 2,0
+//0,9 -> 2,9
+//3,4 -> 1,4
+//0,0 -> 8,8
+//5,5 -> 8,2";
+//
+//    #[test]
+//    fn sample_a() {
+//        assert_eq!(solve_a(parse(str_input(TEST_INPUT))), 5)
+//    }
+//
+//    #[test]
+//    fn sample_b() {
+//        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 12)
+//    }
+//}

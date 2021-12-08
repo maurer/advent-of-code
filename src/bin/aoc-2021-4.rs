@@ -1,4 +1,3 @@
-use sscanf::scanf;
 use std::str::FromStr;
 
 static INPUT: &str = include_str!("../../inputs/2021/4");

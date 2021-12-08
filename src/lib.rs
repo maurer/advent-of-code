@@ -8,3 +8,7 @@ pub fn stdin_input() -> impl Iterator<Item = String> {
 pub fn str_input(input: &'static str) -> impl Iterator<Item = String> {
     std::io::Cursor::new(input).lines().map(|line| line.unwrap())
 }
+
+pub fn tokenize(line: &str) -> impl Iterator<Item = &str> {
+    line.split(|c| [' ', '\t', ',', '-', ':', '>'].contains(&c)).filter(|f| f != &"")
+}
