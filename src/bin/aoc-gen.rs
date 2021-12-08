@@ -317,7 +317,7 @@ fn main() {
     };
     let template = quote! {
         use std::str::FromStr;
-        const INPUT: &str = include_str!("../../inputs/2021/7");
+        const INPUT: &str = include_str!("../../inputs/2021/8");
         fn main() {
             println!(
                 "A: {}\tB: {}",  
@@ -325,10 +325,10 @@ fn main() {
                 solve_b(parse(aoc::str_input(INPUT)))             
             );
         }
-        fn solve_a(input: Input) -> isize {
+        fn solve_a(mut input: Input) -> isize {
             0
         }
-        fn solve_b(input: Input) -> isize {
+        fn solve_b(mut input: Input) -> isize {
             0
         }
         
