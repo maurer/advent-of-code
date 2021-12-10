@@ -184,7 +184,7 @@ acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb c
     }
     #[test]
     fn sample_b() {
-        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 61229)
+        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 5353)
     }
     #[test]
     fn small_b() {
