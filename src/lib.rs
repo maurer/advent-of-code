@@ -10,5 +10,5 @@ pub fn str_input(input: &'static str) -> impl Iterator<Item = String> {
 }
 
 pub fn tokenize(line: &str) -> impl Iterator<Item = &str> {
-    line.split(|c| [' ', '\t', ',', '-', ':', '>'].contains(&c)).filter(|f| f != &"")
+    line.split(|c| [' ', '\t', ',', '-', ':', '>', '|'].contains(&c)).filter(|f| f != &"")
 }
