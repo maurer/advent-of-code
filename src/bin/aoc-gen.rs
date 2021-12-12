@@ -317,7 +317,7 @@ fn main() {
     };
     let template = quote! {
         use std::str::FromStr;
-        const INPUT: &str = include_str!("../../inputs/2021/11");
+        const INPUT: &str = include_str!("../../inputs/2021/12");
         fn main() {
             println!(
                 "A: {}\tB: {}",  
@@ -342,12 +342,12 @@ mod test {
  
     #[test]
     fn sample_a() {
-        assert_eq!(solve_a(parse(str_input(TEST_INPUT))), 5)
+        assert_eq!(solve_a(parse(str_input(TEST_INPUT))), 0)
     }
  
     #[test]
     fn sample_b() {
-        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 12)
+        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 0)
     }
 }
     };
