@@ -317,7 +317,7 @@ fn main() {
     };
     let template = quote! {
         use std::str::FromStr;
-        const INPUT: &str = include_str!("../../inputs/2021/14");
+        const INPUT: &str = include_str!("../../inputs/2021/15");
         fn main() {
             println!(
                 "A: {}\tB: {}",  

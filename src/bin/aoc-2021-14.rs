@@ -157,14 +157,14 @@ BB -> N
 BC -> B
 CC -> N
 CN -> C";
-    #[test]
-    fn sample_a() {
-        assert_eq!(solve_a(parse(str_input(TEST_INPUT))), 0)
-    }
-    #[test]
-    fn sample_b() {
-        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 0)
-    }
+//    #[test]
+//    fn sample_a() {
+//        assert_eq!(solve_a(parse(str_input(TEST_INPUT))), 0)
+//    }
+//    #[test]
+//    fn sample_b() {
+//        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 0)
+//    }
 }
 /*
  * NN @ 2
