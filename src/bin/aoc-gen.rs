@@ -317,7 +317,9 @@ fn main() {
     };
     let template = quote! {
         use std::str::FromStr;
-        const INPUT: &str = include_str!("../../inputs/2021/15");
+        use std::collections::{HashMap, HashSet};
+        use itertools::Itertools;
+        const INPUT: &str = include_str!("../../inputs/2021/16");
         fn main() {
             println!(
                 "A: {}\tB: {}",  
