@@ -319,7 +319,7 @@ fn main() {
         use std::str::FromStr;
         use std::collections::{HashMap, HashSet};
         use itertools::Itertools;
-        const INPUT: &str = include_str!("../../inputs/2021/16");
+        const INPUT: &str = include_str!("../../inputs/2021/17");
         fn main() {
             println!(
                 "A: {}\tB: {}",  
