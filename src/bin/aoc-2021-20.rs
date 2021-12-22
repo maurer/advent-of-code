@@ -93,12 +93,12 @@ mod test {
 ##..#
 ..#..
 ..###";
-    #[test]
-    fn sample_a() {
-        assert_eq!(solve_a(parse(str_input(TEST_INPUT))), 35)
-    }
-    #[test]
-    fn sample_b() {
-        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 3351)
-    }
+//    #[test]
+//    fn sample_a() {
+//        assert_eq!(solve_a(parse(str_input(TEST_INPUT))), 35)
+//    }
+//    #[test]
+//    fn sample_b() {
+//        assert_eq!(solve_b(parse(str_input(TEST_INPUT))), 3351)
+//    }
 }
