@@ -120,7 +120,6 @@ impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
             .enumerate()
             .find_map(|(hall_id, slot)| {
                 slot.and_then(|pod| {
-                    // If there are non-matching pods in the room or the room isn't reachable, we can't go in
                     if self.rooms[pod.room_id()].iter().any(|p| p.is_some() && p != &Some(pod))
                         || self
                             .reachable(hall_id)
@@ -143,40 +142,40 @@ impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
             })
     }
 
-    fn moves(&self) -> Vec<Self> {
-        // If we can move an amphipod in, that is gauranteed optimal.
-        if let Some(state) = self.move_in() {
-            return vec![state];
-        }
-
-        // If we can't, check each room to see if an amphipod can move out.
-        self.rooms
-            .iter()
-            .enumerate()
-            .flat_map(|(room_id, room)| {
+    fn moves(&self) -> impl Iterator<Item = Self> + '_ {
+        let move_in = self.move_in().map(|new_state| [new_state].into_iter());
+        let move_out = if move_in.is_none() {
+            Some(self.rooms.iter().enumerate().flat_map(move |(room_id, room)| {
                 let mut filled = room.iter().enumerate().skip_while(|slot| slot.1.is_none());
-                if let Some((depth, Some(pod))) = filled.next() {
-                    // If the room matches the end state, don't let them leave
-                    if pod.room_id() == room_id && filled.all(|slot| *slot.1 == Some(*pod)) {
-                        return Vec::new();
-                    }
-                    let mut walked_out = *self;
-                    walked_out.cost += pod.cost() * (1 + depth);
-                    walked_out.rooms[room_id][depth] = None;
-                    self.reachable(room_id_to_hall_id(room_id))
-                        .filter(|hall_id| ![2, 4, 6, 8].contains(hall_id))
-                        .map(|hall_id| {
-                            let mut next_state = walked_out;
-                            next_state.cost += pod.cost() * room_id_to_hall_id(room_id).abs_diff(hall_id);
-                            next_state.hall[hall_id] = Some(*pod);
-                            next_state
+                let ff = filled.next().map(|(x, y)| (x, *y));
+                ff.into_iter()
+                    .filter_map(move |(depth, slot)| {
+                        slot.and_then(|pod| {
+                            if pod.room_id() == room_id && filled.all(|slot| *slot.1 == Some(pod)) {
+                                return None;
+                            }
+                            Some((depth, pod))
                         })
-                        .collect()
-                } else {
-                    Vec::new()
-                }
-            })
-            .collect()
+                    })
+                    .flat_map(move |(depth, pod)| {
+                        let mut walked_out = *self;
+                        walked_out.cost += pod.cost() * (1 + depth);
+                        walked_out.rooms[room_id][depth] = None;
+                        self.reachable(room_id_to_hall_id(room_id))
+                            .filter(|hall_id| ![2, 4, 6, 8].contains(hall_id))
+                            .map(move |hall_id| {
+                                let mut next_state = walked_out;
+                                next_state.cost +=
+                                    pod.cost() * room_id_to_hall_id(room_id).abs_diff(hall_id);
+                                next_state.hall[hall_id] = Some(pod);
+                                next_state
+                            })
+                    })
+            }))
+        } else {
+            None
+        };
+        move_in.into_iter().flatten().chain(move_out.into_iter().flatten())
     }
 }
 
