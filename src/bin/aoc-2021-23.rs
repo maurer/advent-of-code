@@ -16,7 +16,10 @@ impl Amphipod {
         [1, 10, 100, 1000][*self as usize]
     }
     fn from(c: char) -> Option<Self> {
-        (c as i64 - 'A' as i64).try_into().ok().and_then(|idx: usize| Self::VALUES.get(idx).copied())
+        (c as i64 - 'A' as i64)
+            .try_into()
+            .ok()
+            .and_then(|idx: usize| Self::VALUES.get(idx).copied())
     }
     fn room_id(&self) -> usize {
         *self as usize
@@ -101,7 +104,8 @@ impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
                 let mut next_state = *self;
                 next_state.hall[hall_id] = None;
                 let back = self.rooms[pod.room_id()].iter().filter(|slot| slot.is_none()).count();
-                let cost = pod.cost() * (back + hall_id.abs_diff(room_id_to_hall_id(pod.room_id())));
+                let cost =
+                    pod.cost() * (back + hall_id.abs_diff(room_id_to_hall_id(pod.room_id())));
                 next_state.rooms[pod.room_id()][back - 1] = Some(pod);
                 (cost, next_state)
             })
@@ -129,7 +133,8 @@ impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
                             .filter(|hall_id| ![2, 4, 6, 8].contains(hall_id))
                             .map(move |hall_id| {
                                 let mut next_state = walked_out;
-                                let cost = pod.cost() * (1 + depth + room_id_to_hall_id(room_id).abs_diff(hall_id));
+                                let cost = pod.cost()
+                                    * (1 + depth + room_id_to_hall_id(room_id).abs_diff(hall_id));
                                 next_state.hall[hall_id] = Some(pod);
                                 (cost, next_state)
                             })
@@ -161,11 +166,10 @@ fn solve<const N: usize>(initial_state: State<N>) -> usize {
         if state.done() {
             return cost;
         }
-        if !visited.insert(state) {
-            continue;
-        }
-        for (delta_cost, next_state) in state.moves() {
-            work_queue.push(Reverse((cost + delta_cost, next_state)));
+        if visited.insert(state) {
+            for (delta_cost, next_state) in state.moves() {
+                work_queue.push(Reverse((cost + delta_cost, next_state)));
+            }
         }
     }
     panic!("No solution found?");
