@@ -2,15 +2,16 @@
 use std::collections::{BinaryHeap, HashSet};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
-enum Pod {
+enum Amphipod {
     A = 0,
     B = 1,
     C = 2,
     D = 3,
 }
+use Amphipod::*;
 
-impl Pod {
-    const VALUES: &'static [Pod] = &[Pod::A, Pod::B, Pod::C, Pod::D];
+impl Amphipod {
+    const VALUES: &'static [Amphipod] = &[A, B, C, D];
     fn cost(&self) -> usize {
         [1, 10, 100, 1000][*self as usize]
     }
@@ -30,16 +31,13 @@ const ROOM_COUNT: usize = 4;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
 struct State<const ROOM_SIZE: usize> {
-    rooms: [[Option<Pod>; ROOM_SIZE]; ROOM_COUNT],
-    hall: [Option<Pod>; HALL_LENGTH],
+    rooms: [[Option<Amphipod>; ROOM_SIZE]; ROOM_COUNT],
+    hall: [Option<Amphipod>; HALL_LENGTH],
 }
 
 type Input = State<2>;
 
-const EXTENSION: [[Pod; 2]; 4] = {
-    use Pod::*;
-    [[D, D], [C, B], [B, A], [A, C]]
-};
+const EXTENSION: [[Amphipod; 2]; 4] = [[D, D], [C, B], [B, A], [A, C]];
 
 fn room_id_to_hall_id(x: usize) -> usize {
     (x * 2) + 2
@@ -51,7 +49,7 @@ impl State<2> {
         for (depth, cs) in input.skip(2).take(2).enumerate() {
             let mut room_id = 0;
             for c in cs.chars() {
-                if let Some(pod) = Pod::from(c) {
+                if let Some(pod) = Amphipod::from(c) {
                     rooms[room_id][depth] = Some(pod);
                     room_id += 1;
                 }
@@ -74,7 +72,7 @@ impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
         self.rooms
             .iter()
             .enumerate()
-            .all(|(idx, room)| room.iter().all(|p| *p == Pod::from_room(idx)))
+            .all(|(idx, room)| room.iter().all(|p| *p == Amphipod::from_room(idx)))
     }
 
     fn reachable(&self, hall_id: usize) -> impl Iterator<Item = usize> + '_ {
