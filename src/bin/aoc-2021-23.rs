@@ -55,7 +55,6 @@ const ROOM_COUNT: usize = 4;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
 struct State<const ROOM_SIZE: usize> {
-    cost: usize,
     rooms: [[Option<Pod>; ROOM_SIZE]; ROOM_COUNT],
     hall: [Option<Pod>; HALL_LENGTH],
 }
@@ -83,7 +82,7 @@ impl State<2> {
                 }
             }
         }
-        State { rooms, hall: [None; HALL_LENGTH], cost: 0 }
+        State { rooms, hall: [None; HALL_LENGTH] }
     }
 
     fn unfold_diagram(self) -> State<4> {
@@ -91,17 +90,11 @@ impl State<2> {
         for ((room_id, room), folded) in self.rooms.into_iter().enumerate().zip(EXTENSION.iter()) {
             new_rooms[room_id] = [room[0], Some(folded[0]), Some(folded[1]), room[1]];
         }
-        State { cost: self.cost, rooms: new_rooms, hall: self.hall }
+        State { rooms: new_rooms, hall: self.hall }
     }
 }
 
 impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
-    fn normalize(&self) -> Self {
-        let mut norm = *self;
-        norm.cost = 0;
-        norm
-    }
-
     fn done(&self) -> bool {
         self.rooms
             .iter()
@@ -114,7 +107,7 @@ impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
         (0..hall_id).rev().take_while(open).chain((hall_id + 1..HALL_LENGTH).take_while(open))
     }
 
-    fn move_in(&self) -> Option<Self> {
+    fn move_in(&self) -> Option<(usize, Self)> {
         self.hall
             .iter()
             .enumerate()
@@ -134,15 +127,14 @@ impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
             .map(|(hall_id, pod)| {
                 let mut next_state = *self;
                 next_state.hall[hall_id] = None;
-                next_state.cost += pod.cost() * hall_id.abs_diff(room_id_to_hall_id(pod.room_id()));
                 let back = self.rooms[pod.room_id()].iter().filter(|slot| slot.is_none()).count();
-                next_state.cost += pod.cost() * back;
+                let cost = pod.cost() * (back + hall_id.abs_diff(room_id_to_hall_id(pod.room_id())));
                 next_state.rooms[pod.room_id()][back - 1] = Some(pod);
-                next_state
+                (cost, next_state)
             })
     }
 
-    fn moves(&self) -> impl Iterator<Item = Self> + '_ {
+    fn moves(&self) -> impl Iterator<Item = (usize, Self)> + '_ {
         let move_in = self.move_in().map(|new_state| [new_state].into_iter());
         let move_out = if move_in.is_none() {
             Some(self.rooms.iter().enumerate().flat_map(move |(room_id, room)| {
@@ -159,16 +151,14 @@ impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
                     })
                     .flat_map(move |(depth, pod)| {
                         let mut walked_out = *self;
-                        walked_out.cost += pod.cost() * (1 + depth);
                         walked_out.rooms[room_id][depth] = None;
                         self.reachable(room_id_to_hall_id(room_id))
                             .filter(|hall_id| ![2, 4, 6, 8].contains(hall_id))
                             .map(move |hall_id| {
                                 let mut next_state = walked_out;
-                                next_state.cost +=
-                                    pod.cost() * room_id_to_hall_id(room_id).abs_diff(hall_id);
+                                let cost = pod.cost() * (1 + depth + room_id_to_hall_id(room_id).abs_diff(hall_id));
                                 next_state.hall[hall_id] = Some(pod);
-                                next_state
+                                (cost, next_state)
                             })
                     })
             }))
@@ -193,16 +183,16 @@ fn solve<const N: usize>(initial_state: State<N>) -> usize {
     use std::cmp::Reverse;
     let mut work_queue = BinaryHeap::new();
     let mut visited = HashSet::new();
-    work_queue.push(Reverse(initial_state));
-    while let Some(Reverse(state)) = work_queue.pop() {
+    work_queue.push(Reverse((0, initial_state)));
+    while let Some(Reverse((cost, state))) = work_queue.pop() {
         if state.done() {
-            return state.cost;
+            return cost;
         }
-        if !visited.insert(state.normalize()) {
+        if !visited.insert(state) {
             continue;
         }
-        for next_state in state.moves() {
-            work_queue.push(Reverse(next_state));
+        for (delta_cost, next_state) in state.moves() {
+            work_queue.push(Reverse((cost + delta_cost, next_state)));
         }
     }
     panic!("No solution found?");
