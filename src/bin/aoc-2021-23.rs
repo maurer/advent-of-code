@@ -104,51 +104,35 @@ impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
         (0..hid).rev().take_while(open).chain((hid + 1..HALLWAY_LENGTH).take_while(open))
     }
 
-    fn next(&self) -> Vec<Self> {
-        let mut out = Vec::new();
+    fn moves(&self) -> impl Iterator<Item = Self> + '_ {
         // First check any pods can move out, and to where
-        'outer: for (rid, room) in self.rooms.iter().enumerate() {
-            let mut ns = *self;
-            let mut to_move = None;
-            for (i, x) in room.iter().enumerate() {
-                if let Some(pod) = x {
-                    if pod.room() == rid {
-                        // Check if there are pods in the back with a bad id
-                        if room[i + 1..].iter().all(|p| {
-                            if let Some(q) = p {
-                                q.room() == rid
-                            } else {
-                                panic!("We shouldn' thave empty cells behind a full one")
-                            }
-                        }) {
-                            // All the pods behind us have the right rid, don't leave
-                            continue 'outer;
-                        }
-                    }
-                    ns.cost += pod.cost() * (1 + i);
-                    ns.rooms[rid][i] = None;
-                    to_move = Some(*pod);
-                    break;
+        let move_out = self.rooms.iter().enumerate().flat_map(|(rid, room)| {
+            let mut opt = room.iter().enumerate().skip_while(|slot| slot.1.is_none());
+            if let Some((depth, Some(pod))) = opt.next() {
+                if pod.room() == rid && opt.all(|slot| *slot.1 == Pod::from_room(rid)) {
+                    // Both the first occupied space and all spaces behind it are correct.
+                    return Vec::new();
                 }
-            }
-            if let Some(pod) = to_move {
-                for col in ns.reachable(room_to_col(rid)) {
-                    if [2, 4, 6, 8].contains(&col) {
-                        continue;
-                    }
+                let mut ns = *self;
+                ns.cost += pod.cost() * (1 + depth);
+                ns.rooms[rid][depth] = None;
+                ns.reachable(room_to_col(rid)).filter(|hid| ![2, 4, 6, 8].contains(hid)).map(|hid| {
                     let mut nns = ns;
-                    nns.cost += pod.cost() * room_to_col(rid).abs_diff(col);
-                    nns.hallway[col] = Some(pod);
-                    out.push(nns);
-                }
+                    nns.cost += pod.cost() * room_to_col(rid).abs_diff(hid);
+                    nns.hallway[hid] = Some(*pod);
+                    nns
+                }).collect()
+            } else {
+                Vec::new()
             }
-        }
+        });
+
         // Then, check if any pods can move in, and if so, to where
-        for (hid, slot) in self.hallway.iter().enumerate() {
+        let move_in = self.hallway.iter().enumerate().filter_map(|(hid, slot)| {
             if let Some(pod) = slot {
                 if self.rooms[pod.room()].iter().any(|p| p.is_some() && p != &Some(*pod)) {
                     // We're not allowed to go in, another kind of pod is in there
-                    continue;
+                    return None;
                 }
                 let target = room_to_col(pod.room());
                 if self.reachable(hid).any(|hid| hid == target) {
@@ -168,11 +152,12 @@ impl<const ROOM_SIZE: usize> State<ROOM_SIZE> {
                     back -= 1;
                     ns.cost += pod.cost() * (back + 1);
                     ns.rooms[pod.room()][back] = Some(*pod);
-                    out.push(ns)
+                    return Some(ns)
                 }
             }
-        }
-        out
+            None
+        });
+        move_out.chain(move_in)
     }
 }
 fn room_to_col(x: usize) -> usize {
@@ -204,7 +189,7 @@ fn solve<const N: usize>(state: State<N>) -> usize {
             continue;
         }
         visited.insert(sx);
-        for s2 in s.next() {
+        for s2 in s.moves() {
             let mut z = s2;
             z.cost = 0;
             if !visited.contains(&z) {
