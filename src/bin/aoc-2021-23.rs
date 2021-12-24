@@ -3,50 +3,25 @@ use std::collections::{BinaryHeap, HashSet};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
 enum Pod {
-    A,
-    B,
-    C,
-    D,
+    A = 0,
+    B = 1,
+    C = 2,
+    D = 3,
 }
 
 impl Pod {
+    const VALUES: &'static [Pod] = &[Pod::A, Pod::B, Pod::C, Pod::D];
     fn cost(&self) -> usize {
-        use Pod::*;
-        match *self {
-            A => 1,
-            B => 10,
-            C => 100,
-            D => 1000,
-        }
+        [1, 10, 100, 1000][*self as usize]
     }
     fn from(c: char) -> Option<Self> {
-        use Pod::*;
-        match c {
-            'A' => Some(A),
-            'B' => Some(B),
-            'C' => Some(C),
-            'D' => Some(D),
-            _ => None,
-        }
+        (c as i64 - 'A' as i64).try_into().ok().and_then(|idx: usize| Self::VALUES.get(idx).copied())
     }
     fn room_id(&self) -> usize {
-        use Pod::*;
-        match *self {
-            A => 0,
-            B => 1,
-            C => 2,
-            D => 3,
-        }
+        *self as usize
     }
     fn from_room(room: usize) -> Option<Self> {
-        use Pod::*;
-        match room {
-            0 => Some(A),
-            1 => Some(B),
-            2 => Some(C),
-            3 => Some(D),
-            _ => None,
-        }
+        Self::VALUES.get(room).copied()
     }
 }
 
