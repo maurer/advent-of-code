@@ -6,7 +6,7 @@ use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use sscanf::scanf;
 use std::str::FromStr;
-const INPUT: &str = include_str!("../../inputs/2021/22");
+const INPUT: &str = include_str!("../../inputs/2021/24");
 fn main() {
     println!(
         "A: {}\tB: {}",
